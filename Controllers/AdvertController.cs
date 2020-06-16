@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AdvertApi.Models;
 using AdvertApi.Models.Messages;
 using AdvertApi.Services;
+using Amazon.DynamoDBv2;
 using Amazon.SimpleNotificationService;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,11 @@ namespace AdvertApi.Controllers
     [ApiController]
     [Route("adverts/v1")]
     [Produces("application/json")]
-    public class Advert : ControllerBase
+    public class AdvertController : ControllerBase
     {
         private readonly IAdvertStorageService _advertStorageService;
 
-        public Advert(IAdvertStorageService advertStorageService, IConfiguration configuration)
+        public AdvertController(IAdvertStorageService advertStorageService, IConfiguration configuration)
         {
             _advertStorageService = advertStorageService;
             Configuration = configuration;
@@ -47,7 +48,7 @@ namespace AdvertApi.Controllers
                 return BadRequest(exception.Message);
             }
 
-            return Ok( new CreateAdvertResponse {Id = recordId});
+            return Ok(new CreateAdvertResponse { Id = recordId });
         }
 
         [HttpPut]
@@ -106,9 +107,9 @@ namespace AdvertApi.Controllers
             {
                 return new NotFoundResult();
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                return new StatusCodeResult(500);
+                return BadRequest(exception.Message);
             }
         }
 
@@ -119,6 +120,15 @@ namespace AdvertApi.Controllers
         public async Task<IActionResult> All()
         {
             return new JsonResult(await _advertStorageService.GetAllAsync());
+        }
+        public async Task<bool> CheckHealthAsync()
+        {
+            using (var client = new AmazonDynamoDBClient())
+            {
+                var tableData = await client.DescribeTableAsync("Adverts");
+                return string.Compare(tableData.Table.TableStatus, "Active", true)==0;
+            }
+
         }
     }
 }

@@ -1,3 +1,4 @@
+using AdvertApi.HealthChecks;
 using AdvertApi.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
@@ -22,7 +23,9 @@ namespace MyWebAdvert.AdvertApi
         {
             services.AddAutoMapper(typeof(Startup));
             services.AddTransient<IAdvertStorageService, DynamoDBAdvertStorage>();
+            services.AddHealthChecks().AddCheck<StorageHealthCheck>("Storage"); ;
             services.AddControllers();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,7 +41,7 @@ namespace MyWebAdvert.AdvertApi
             app.UseRouting();
 
             app.UseAuthorization();
-
+            app.UseHealthChecks("/health");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
