@@ -1,4 +1,4 @@
 # MyWebAdvert.AdvertApi
 
 
-The counterpas of MyWebAdvert.AdvertWeb
+The counterpas of MyWebAdvert.Web, from udemy course.
